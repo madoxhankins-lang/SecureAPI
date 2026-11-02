@@ -21,8 +21,13 @@ body:json {
   }
 }
 
+script:pre-request {
+  bru.setEnvVar("userToken", "");
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
+    bru.setEnvVar("userToken", res.getBody().data.accessToken);
     bru.setVar("userToken", res.getBody().data.accessToken);
   }
 }

@@ -21,8 +21,13 @@ body:json {
   }
 }
 
+script:pre-request {
+  bru.setEnvVar("adminToken", "");
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
+    bru.setEnvVar("adminToken", res.getBody().data.accessToken);
     bru.setVar("adminToken", res.getBody().data.accessToken);
   }
 }

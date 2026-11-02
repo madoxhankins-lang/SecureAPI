@@ -120,6 +120,14 @@ test('auth endpoints have a separate stricter limiter', async () => {
   error(await request(limited).post('/auth/login').send(user), 429, 'RATE_LIMITED');
   await request(limited).get('/health').expect(200);
 });
+test('successful registration and login do not consume the failed-auth allowance', async () => {
+  const limited = await createApp({ config: { ...config, admin: undefined }, logger, authLimit: 1 });
+  await request(limited).post('/auth/register').send(user).expect(201);
+  await request(limited).post('/auth/login').send(user).expect(200);
+  await request(limited).post('/auth/login').send(user).expect(200);
+  await request(limited).post('/auth/login').send({ ...user, password: 'wrong' }).expect(401);
+  error(await request(limited).post('/auth/login').send(user), 429, 'RATE_LIMITED');
+});
 test('passwords are hashed and concurrent registration cannot replace an account', async () => {
   const store = new UserStore();
   const results = await Promise.allSettled([store.add(user.email, user.password), store.add(user.email, 'another-password-123')]);
@@ -147,4 +155,7 @@ test('configuration rejects missing secrets, partial admin config and invalid va
     { JWT_SECRET: config.jwtSecret, PORT: '0' }, { JWT_SECRET: config.jwtSecret, CORS_ORIGINS: '*' },
     { JWT_SECRET: config.jwtSecret, JWT_TTL_SECONDS: '999999' }]) assert.throws(() => readConfig(env));
   assert.equal(readConfig({ JWT_SECRET: config.jwtSecret }).port, 3000);
+  assert.equal(readConfig({ JWT_SECRET: config.jwtSecret }).authRateLimit, 10);
+  assert.equal(readConfig({ JWT_SECRET: config.jwtSecret, AUTH_RATE_LIMIT: '100' }).authRateLimit, 100);
+  assert.throws(() => readConfig({ JWT_SECRET: config.jwtSecret, AUTH_RATE_LIMIT: '0' }));
 });

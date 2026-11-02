@@ -22,9 +22,11 @@ body:json {
 }
 
 script:pre-request {
-  bru.setVar("userEmail", "demo-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "@example.com");
+  const email = "demo-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "@example.com";
+  bru.setEnvVar("userEmail", email);
+  bru.setVar("userEmail", email);
+  bru.setEnvVar("userToken", "");
   bru.setVar("userToken", "");
-  bru.setVar("adminToken", "");
 }
 
 tests {

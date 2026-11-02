@@ -2,6 +2,7 @@ export interface Config {
   port: number;
   jwtSecret: string;
   jwtTtlSeconds: number;
+  authRateLimit?: number;
   corsOrigins: string[];
   logDir: string;
   admin?: { email: string; password: string };
@@ -30,6 +31,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): Config {
   return {
     port: integer(env.PORT, 3000, 65535), jwtSecret: secret,
     jwtTtlSeconds: integer(env.JWT_TTL_SECONDS, 900, 3600),
+    authRateLimit: integer(env.AUTH_RATE_LIMIT, 10, 1000),
     corsOrigins, logDir: env.LOG_DIR || 'logs',
     ...(email && password ? { admin: { email, password } } : {})
   };

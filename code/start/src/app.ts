@@ -12,7 +12,7 @@ import { ApiError, errorHandler, validate } from './errors';
 import { UserStore, publicUser, type User } from './users';
 import { authenticate, issueToken, requireRole } from './auth';
 interface Options { config: Config; logger: Logger; apiLimit?: number; authLimit?: number }
-export async function createApp({ config, logger, apiLimit = 100, authLimit = 10 }: Options) {
+export async function createApp({ config, logger, apiLimit = 100, authLimit = config.authRateLimit ?? 10 }: Options) {
   const app = express();
   const users = new UserStore();
   if (config.admin) await users.add(config.admin.email, config.admin.password, 'ADMIN');
@@ -30,9 +30,10 @@ export async function createApp({ config, logger, apiLimit = 100, authLimit = 10
     status: Number(tokens.status(req, res)), durationMs: Number(tokens['response-time'](req, res))
   }), { stream: { write: line => logger.info('http.request', JSON.parse(line)) } }));
   app.use(helmet());
-  const limiter = (limit: number, windowMs: number) => rateLimit({
+  const limiter = (limit: number, windowMs: number, skipSuccessfulRequests = false) => rateLimit({
     windowMs, limit, standardHeaders: 'draft-8', legacyHeaders: false,
-    handler: (_req, _res, next) => next(new ApiError(429, 'RATE_LIMITED', 'Too many requests. Please try again later.'))
+    skipSuccessfulRequests,
+    handler: (_req, res, next) => next(new ApiError(429, 'RATE_LIMITED', `Too many requests. Try again in ${res.getHeader('Retry-After')} seconds.`))
   });
   app.use(limiter(apiLimit, 60_000));
   app.use(cors({
@@ -42,7 +43,7 @@ export async function createApp({ config, logger, apiLimit = 100, authLimit = 10
     },
     methods: ['GET', 'POST'], allowedHeaders: ['Content-Type', 'Authorization'], exposedHeaders: ['X-Request-ID']
   }));
-  app.use('/auth', limiter(authLimit, 15 * 60_000));
+  app.use('/auth', limiter(authLimit, 15 * 60_000, true));
   app.use(express.json({ limit: '10kb', strict: true }));
   app.use((req, _res, next) => {
     if (req.method === 'POST' && !req.is('application/json')) throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Send the request as application/json.');

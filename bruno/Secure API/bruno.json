@@ -2,6 +2,7 @@
   "version": "1",
   "name": "Secure API - Demo",
   "type": "collection",
+  "presets": { "defaultEnvironment": "Local" },
   "ignore": [
     "node_modules",
     ".git"
