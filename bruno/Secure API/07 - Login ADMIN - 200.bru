@@ -1,0 +1,38 @@
+meta {
+  name: Login ADMIN - 200
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{process.env.ADMIN_EMAIL}}",
+    "password": "{{process.env.ADMIN_PASSWORD}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("adminToken", res.getBody().data.accessToken);
+  }
+}
+
+tests {
+  test("Login ADMIN - 200", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.user.role).to.equal("ADMIN");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

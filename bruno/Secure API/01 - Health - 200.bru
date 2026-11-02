@@ -1,0 +1,21 @@
+meta {
+  name: Health - 200
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: none
+}
+
+tests {
+  test("Health - 200", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.status).to.equal("ok");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

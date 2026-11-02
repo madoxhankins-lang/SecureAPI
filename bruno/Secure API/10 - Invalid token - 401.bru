@@ -1,0 +1,25 @@
+meta {
+  name: Invalid token - 401
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/secure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: invalid-demo-token
+}
+
+tests {
+  test("Invalid token - 401", function () {
+    expect(res.getStatus()).to.equal(401);
+    expect(res.getBody().error.code).to.equal("INVALID_TOKEN");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Secure as ADMIN - 200
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/secure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Secure as ADMIN - 200", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.message).to.contain("administrator");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

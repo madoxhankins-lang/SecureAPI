@@ -1,0 +1,21 @@
+meta {
+  name: Secure without token - 401
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/secure
+  body: none
+  auth: none
+}
+
+tests {
+  test("Secure without token - 401", function () {
+    expect(res.getStatus()).to.equal(401);
+    expect(res.getBody().error.code).to.equal("AUTH_REQUIRED");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

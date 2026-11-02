@@ -1,0 +1,8 @@
+{
+  "name": "Secure API",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "postCreateCommand": "cd code/start && npm ci",
+  "forwardPorts": [3000],
+  "portsAttributes": { "3000": { "label": "Secure API" } },
+  "customizations": { "vscode": { "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"] } }
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Invalid signup - 400
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "not-an-email",
+    "password": "short"
+  }
+}
+
+tests {
+  test("Invalid signup - 400", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().error.code).to.equal("VALIDATION_ERROR");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

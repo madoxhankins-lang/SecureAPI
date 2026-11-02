@@ -1,0 +1,39 @@
+meta {
+  name: Login USER - 200
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("userToken", res.getBody().data.accessToken);
+  }
+}
+
+tests {
+  test("Login USER - 200", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.accessToken).to.be.a("string");
+    expect(res.getBody().data.user.role).to.equal("USER");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

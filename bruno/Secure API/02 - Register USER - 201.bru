@@ -1,0 +1,39 @@
+meta {
+  name: Register USER - 201
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("userEmail", "demo-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "@example.com");
+  bru.setVar("userToken", "");
+  bru.setVar("adminToken", "");
+}
+
+tests {
+  test("Register USER - 201", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().data.user.role).to.equal("USER");
+    expect(res.getBody().data.user).not.to.have.property("passwordHash");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}

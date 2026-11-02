@@ -1,0 +1,25 @@
+meta {
+  name: Secure as USER - 403
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/secure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userToken}}
+}
+
+tests {
+  test("Secure as USER - 403", function () {
+    expect(res.getStatus()).to.equal(403);
+    expect(res.getBody().error.code).to.equal("FORBIDDEN");
+  });
+  test("Response includes a request ID", function () {
+    expect(res.getBody().requestId).to.be.a("string");
+  });
+}
